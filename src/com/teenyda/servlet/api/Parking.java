@@ -30,6 +30,18 @@ public class Parking extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private OrderServiceImpl orderService = new OrderServiceImpl();
 	private Jedis jedis = new Jedis();
+	/**
+	 * 下行数据 开锁
+	 */
+	private static final String down_unlocking = "AB11002";
+	/**
+	 * 下行数据 锁
+	 */
+	private static final String down_lockup = "AB10001";
+	/**
+	 * 下行数据 查询
+	 */
+	private static final String down_query = "AB12003";
 
 	public Parking() {
 		super();
@@ -45,7 +57,7 @@ public class Parking extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response) 需要的参数lookid（车锁编号）, sessionKey(自定义的sessionkey)
 	 *      js_code(用来获取用户openid) 需要生成的参数： orderid（订单id）
-	 *      ,starttime(开始时间)，time（生成时间）
+	 *      
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -63,16 +75,19 @@ public class Parking extends HttpServlet {
 		// session有效
 		if (jedis.exists(sessionkey)) {
 			// 添加缓存
-			String key = "lookid=" + (Integer.parseInt(lookid) + 1);
-			jedis.set(key, "1");// 开锁
+			String key = "lookNumber=" + (Integer.parseInt(lookid) + 1);
+			jedis.set(key, down_unlocking);// 开锁
 			System.out.println("key=" + key);
 			System.out.println("命令:" + jedis.get(key));
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			while(true){
+				if (jedis.exists(key)){
+					String result = jedis.get(key);
+					if (result.equals("true") || result.equals("false")){
+						break;
+					}
+				}
 			}
-			if (jedis.exists(key)) {
+			if (jedis.get(key).equals("false")) {
 				ApiResponseObject resp = new ApiResponseObject();
 				resp.setErrorCode(-1);
 				resp.setErrorMsg("开锁失败");
@@ -90,9 +105,11 @@ public class Parking extends HttpServlet {
 				System.out.println("订单id" + orderId);
 				OrderId oid = new OrderId();
 				oid.setOrderid(orderId);
+				
 				resp.setErrorCode(1);
 				resp.setErrorMsg("开锁成功，生成订单");
 				resp.setData(oid);
+				
 				String json = js.fromObject(resp).toString();
 				System.out.println(json);
 				pw.write(json);
@@ -106,6 +123,8 @@ public class Parking extends HttpServlet {
 			resp.setErrorMsg("sessionKey无效");
 			pw.write(js.fromObject(resp).toString());
 		}
+		
+		jedis.del("lookNumber=1");
 	}
 
 }

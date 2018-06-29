@@ -1,0 +1,5 @@
+com.teenyda.servlet.api
+微信端请求api
+	AppLogin - /onLogin  微信小程序登录接口
+	CanelParkingSpace - /canelParkingSpace 微信隐藏时取消停车位
+	CheckSession - /checkSession 检测微信会话

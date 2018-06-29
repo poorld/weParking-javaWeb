@@ -16,7 +16,12 @@ public class MarkerDaoImpl implements MarkerDao{
 	public List<Marker> getMarkers() {
 		// TODO Auto-generated method stub
 		Connection conn = DBUtil.getConnection();
-		String sql = "select * from markers";
+//		String sql = "select * from markers";
+		String sql = "select m.id,m.title,m.iconPath,m.latitude,m.longitude,m.width,m.height "
+				+ "from look l "
+				+ "LEFT JOIN markers m  "
+				+ "ON l.lookid = m.id "
+				+ "WHERE l.state = 1 OR l.state = 2";
 		PreparedStatement prep = null;
 		ResultSet rs = null;
 		List<Marker> markers = new ArrayList<Marker>();

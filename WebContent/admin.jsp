@@ -18,13 +18,15 @@
 <body>
 	<div class="body">
 		<div class="ui inverted segment">
-			<div class="ui inverted secondary pointing menu ">
+			<div class="ui inverted secondary pointing menu">
 				<a class="active item" data-tab="first"> 管理 </a> 
 				<a class="item" data-tab="second"> 用户 </a> 
 				<a class="item" data-tab="third"> 调试锁</a> 
+				<!-- 添加车位 -->
 				<a class="item" href="javascript:void(0)" onclick="addParking()">
 					<i class="add circle icon"></i>
 				</a>
+				
 			</div>
 		</div>
 
@@ -50,7 +52,7 @@
 							<c:if test="${parking.state == 1 }">
 								<td><i class="large green checkmark icon"></i>可用</td>
 							</c:if>
-							<c:if test="${parking.state == 2 }">
+							<c:if test="${parking.state == 2 || parking.state == 3}">
 								<td><i class="icon close"></i>不可用</td>
 							</c:if>
 							<td>${parking.longitude}</td>
@@ -125,6 +127,9 @@
   			<button class="ui button primary" onclick="myaction('openlook')">开锁</button>
 			<button class="ui button primary" onclick="myaction('closelook')">关锁</button>
 			<button class="ui primary button" onclick="myaction('querylook')"> 查询状态</button>
+			<button class="ui orange button" onclick="manage('available')"> 一键可用</button>
+			<button class="ui orange button" onclick="manage('disabled')"> 一键不可以</button>
+			<button class="ui orange button" onclick="manage('offline')"> 一键下线</button>
 			
 			<div class="ui message" id="msg" style="height:80%">
   			<div class="header">
@@ -337,6 +342,25 @@
 					};
 					$msg.append("<p style='color:red'>"+re.msg+" state:"+re.state+"</p>") */
 				},
+			})
+		}
+		
+		function manage(res) {
+			//available 一键可用
+			//disabled 一键不可以
+			//offline 一键下线
+			var data = {
+					"action": res
+			}
+			alert(res)
+			$.ajax({
+				type: "POST",
+				url: "${root}/modifyState",
+				data: data,
+				dataType: "json",
+				success: function(){
+					window.location.reload();
+				}
 			})
 		}
 	</script>
